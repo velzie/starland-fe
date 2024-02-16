@@ -1,3 +1,5 @@
+import { Account, state } from "./state";
+
 export async function sendForm(url: string, data: Record<string, string>) {
     const formData = new FormData();
     for (const key in data) {
@@ -39,5 +41,10 @@ export async function auth() {
         username: "alternate",
         password: "r4Hkwu2Z$*3zC6"
     })
+
+
+    let req = await fetch("/api/v1/accounts/verify_credentials");
+    state.user = await req.json();
+
 
 }

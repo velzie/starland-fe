@@ -13,6 +13,7 @@
     "vite": "^5.1.0"
   },
   "dependencies": {
-    "@mercuryworkshop/alicejs": "link:/home/ce/Documents/GitHub/AliceJS"
+    "@mercuryworkshop/alicejs": "link:/home/ce/Documents/GitHub/AliceJS",
+    "@mercuryworkshop/dreamland-router": "link:/home/ce/Documents/GitHub/dreamland-router"
   }
 }

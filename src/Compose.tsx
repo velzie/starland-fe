@@ -1,4 +1,6 @@
 import { sendForm } from "./api";
+import { borderbox, col, flex, gap, h100, w100 } from "./css";
+import { Container } from "./main";
 
 export type Compose = DLComponent<{
     content: string
@@ -12,9 +14,19 @@ export type Compose = DLComponent<{
 }>;
 
 let style = css`
-.composebox {
-    width: 100%;
-    min-height: 100px;
+
+self {
+    gap: 0.5em;
+}
+
+textarea, input {
+    border: none;
+}
+
+button {
+    width: 200px;
+    border: none;
+    background-color: var(--accent);
 }
 `;
 
@@ -25,37 +37,39 @@ export function Compose(this: Compose) {
     this.content ??= "";
     this.cw ??= "";
 
-    handle(use(this.content), console.log)
-
     return (
-        <div>
+        <div class={[flex, col, borderbox, gap]}>
             <input placeholder="content warning" bind:value={use(this.cw)} />
             <textarea
                 bind:value={use(this.content)}
                 placeholder="shitpost here"
-                class="composebox"
+                class={[w100, h100, rule`resize: none; box-sizing: border-box`]}
             />
 
-            <button class={[grayed]} on:click={async () => {
-                this.sending = true;
-                $el.classList.toggle(grayed);
-                try {
-                    await sendForm("/api/v1/statuses", {
-                        status: this.content,
-                        source: "Pleroma for Nintendo DS",
-                        visibility: "direct",
-                        content_type: "text/plain",
-                        language: "en" //rahhhhh
-                    });
-                } catch { }
-                $el.classList.toggle(grayed);
-                this.sending = false;
+            <div class={[flex, w100]}>
+                <div>
+                    visibility
+                </div>
+                <button class={[grayed]} on:click={async () => {
+                    this.sending = true;
+                    $el.classList.toggle(grayed);
+                    try {
+                        await sendForm("/api/v1/statuses", {
+                            status: this.content,
+                            source: "Pleroma for Nintendo DS",
+                            visibility: "direct",
+                            content_type: "text/plain",
+                            language: "en" //rahhhhh
+                        });
+                    } catch { }
+                    $el.classList.toggle(grayed);
+                    this.sending = false;
 
-                if (this.onsend) this.onsend();
-            }}>
-                Post
-            </button>
-
+                    if (this.onsend) this.onsend();
+                }}>
+                    Post
+                </button>
+            </div>
         </div>
     )
 }
