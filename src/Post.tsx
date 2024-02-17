@@ -7,7 +7,18 @@ import { AccountView } from "./AccountView";
 let postcss = css`
 self {
   max-width: 600px;
+  padding-left: 1em;
 }
+
+button {
+  border: none;
+  background-color: initial;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-family: monospace;
+}
+
 `;
 
 export type Post = DLComponent<{
@@ -58,33 +69,44 @@ export function Post(this: Post) {
       }
       {
         post.object.in_reply_to_account_id &&
-        <div class={[flex,hcenter]}>
+        <div class={[flex, hcenter]}>
           in reply to
-          <AccountView account={accounts.get(post.object.in_reply_to_account_id)?.account} showpfp/>
+          <AccountView account={accounts.get(post.object.in_reply_to_account_id)?.account} showpfp />
         </div>
         || ""
       }
       <ContentRenderer post={post} />
-      <div class={[flex, wevenly]}>
-        <div>
-          {use(post.object.replies_count)} replies
-          <button on:click={() => this.showcompose = true}>reply</button>
-        </div>
-        <div>
-          {use(post.object.favourites_count)} stars
-          <button on:click={async () => {
-            let post = await send(`/api/v1/statuses/${this.id}/favourite`, {});
-            parseStatus(post);
-          }}>star</button>
-        </div>
-        <div>
-          {use(post.object.reblogs_count)} reblogs
-          <button on:click={async () => {
-            let post = await send(`/api/v1/statuses/${this.id}/reblog`, {});
-            parseStatus(post);
-          }}>reblog</button>
-        </div>
+      <div class={[flex, rule`justify-content:space-evenly`]}>
+        <button on:click={() => this.showcompose = true}>
+          <iconify-icon icon="fa:reply" />
+          {use(post.object.replies_count)}
+        </button>
 
+        <button on:click={async () => {
+          let post = await send(`/api/v1/statuses/${this.id}/favourite`, {});
+          parseStatus(post);
+        }}>
+          <iconify-icon icon="fa:star" />
+          {use(post.object.favourites_count)}
+        </button>
+
+        <button on:click={async () => {
+          let post = await send(`/api/v1/statuses/${this.id}/reblog`, {});
+          parseStatus(post);
+        }}>
+          <iconify-icon icon="fa:retweet" />
+          {use(post.object.reblogs_count)}
+        </button>
+
+        <button on:click={async () => {
+        }}>
+          <iconify-icon icon="fa6-solid:face-smile" />
+        </button>
+
+        <button on:click={async () => {
+        }}>
+          <iconify-icon icon="fa6-solid:ellipsis-vertical"></iconify-icon>
+        </button>
       </div>
 
       <div if={use(this.showcompose)}>

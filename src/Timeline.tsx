@@ -1,5 +1,5 @@
 import { Post } from "./Post";
-import { flex, wevenly, hcenter, col, h100, scrolly, gap } from "./css";
+import { flex, wevenly, hcenter, col, h100, scrolly, gap, clip } from "./css";
 import { parseStatus, Status } from "./state";
 import { PostTree } from "./PostTree";
 
@@ -42,7 +42,7 @@ export function Timeline(this: Timeline) {
   };
 
   return (
-    <div class={[flex, col, hcenter, h100]}>
+    <div class={[flex, col, hcenter, h100, clip]}>
       <div bind:this={use(this.postsroot)} class={[flex, col, hcenter, gap, scrolly, rule`scrollbar-width: none`]}>
         {use(this.posts)}
       </div>

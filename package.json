@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@mercuryworkshop/alicejs": "link:/home/ce/Documents/GitHub/AliceJS",
-    "@mercuryworkshop/dreamland-router": "link:/home/ce/Documents/GitHub/dreamland-router"
+    "@mercuryworkshop/dreamland-router": "link:/home/ce/Documents/GitHub/dreamland-router",
+    "iconify-icon": "^2.0.0"
   }
 }

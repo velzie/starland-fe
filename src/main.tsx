@@ -1,5 +1,6 @@
 import './style.css'
 import "@mercuryworkshop/alicejs";
+import 'iconify-icon';
 
 import { Route, Router } from "@mercuryworkshop/dreamland-router";
 
@@ -43,11 +44,14 @@ self {
   this.mount = async () => {
     await auth();
 
-    // this.fetchnotifs();
+
+    setInterval(() => {
+      this.fetchnotifs();
+    }, 1000);
   };
   return (
     <div class={[flex, wevenly, clip, h100, borderbox, padding, gap]}>
-      <Container class={[flex, col, padding, gap]} title="post">
+      <Container class={[flex, col, padding, gap, rule`width: 20%`]} title="post">
         <Container class={[flex, padding, borderbox, gap]}>
           <img src={use(state.user?.avatar)} width="64" height="64" />
           <div class={[flex, col]}>
@@ -61,7 +65,7 @@ self {
         </Container>
         <Compose />
       </Container>
-      <Container title="feed" class={[flex, col]}>
+      <Container title="feed" class={[flex, col, rule`flex: 1`]}>
         <div class={[flex, "shelf"]}>
           <button>
             home
@@ -81,9 +85,9 @@ self {
         </div>
         <Timeline kind="bubble" />
       </Container>
-      <Container class={[padding, borderbox]} title="notifications">
-        <button on:click={() => this.fetchnotifs()}>notifs :3</button>
-        <div class={[flex, col, scrolly, h100]}>
+      <Container class={[padding, borderbox, rule`width: 30%`]} title="notifications">
+        {/* <button on:click={() => this.fetchnotifs()}>notifs :3</button> */}
+        <div class={[flex, col, scrolly, h100, gap]}>
           {use(this.notifs)}
         </div>
       </Container>
@@ -129,7 +133,7 @@ export function NotificationView(this: NotificationView) {
       <div>
         <img src={this.notification.account.avatar} width="32" height="32" />
       </div>
-      <div class={[flex, col]}>
+      <div class={[flex, col, rule`flex: 1`]}>
         <div>
           {this.notification.account.acct}
           {" "}
@@ -182,7 +186,7 @@ export function Container(this: DLComponent<{ class: any, title: string }>) {
   this.class ??= [];
 
   return (
-    <div class={[...this.class, w100]}>
+    <div class={[...this.class]}>
       {this.title &&
         <div class="pseudo">
           <div class="bar"></div>

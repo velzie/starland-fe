@@ -5,11 +5,11 @@ export type AccountView = DLComponent<{
     account: Account
     showpfp: boolean
 }>
-export function AccountView(this: AccountView){
+export function AccountView(this: AccountView) {
     return (
-        <div class={[flex,hcenter]}>
+        <div class={[flex, hcenter]}>
             <a href="skibidi">
-                {this.account.acct}
+                {/* {this.account.acct} */}
             </a>
             {/* <img src={this.account.pleroma.favicon} /> */}
         </div>
