@@ -60,11 +60,15 @@ export const accounts: Map<string, KnownAccount> = new Map;
 (window as any).a = statuses;
 
 
-export function parseStatus(object: Status): KnownStatus {
+export async function parseStatus(object: Status): Promise<KnownStatus> {
     const { id } = object;
 
     for (let acc of object.mentions) {
-        parseAccount(acc);
+        if (!accounts.has(acc.id)) {
+            let resp = await fetch(`/api/v1/accounts/${acc.id}/?with_relationships=true`)
+            let account = await resp.json();
+            parseAccount(account);
+        }
     }
 
     if (statuses.has(id)) {

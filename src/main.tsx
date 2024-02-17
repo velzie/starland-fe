@@ -17,6 +17,7 @@ import { ContentRenderer, Post } from './Post';
 export type App = DLComponent<{
   notifs_since_id: string | null
   notifs: DLElement<NotificationView>[]
+  width: number
   fetchnotifs: () => void
 }>
 function App(this: App): DLElement<App> {
@@ -45,27 +46,52 @@ self {
     await auth();
 
 
+    this.fetchnotifs();
     setInterval(() => {
       this.fetchnotifs();
-    }, 1000);
+    }, 5000);
+
+    this.width = window.innerWidth
+    window.addEventListener("resize", () => {
+      this.width = window.innerWidth
+    });
   };
+
+
+  const notifications = (<Container class={[padding, borderbox, w100, h100]} title="notifications">
+    <div class={[flex, col, scrolly, h100, w100, gap, rule`scrollbar-width: none`]}>
+      {use(this.notifs)}
+    </div>
+  </Container>
+  );
+
   return (
-    <div class={[flex, wevenly, clip, h100, borderbox, padding, gap]}>
-      <Container class={[flex, col, padding, gap, rule`width: 20%`]} title="post">
-        <Container class={[flex, padding, borderbox, gap]}>
-          <img src={use(state.user?.avatar)} width="64" height="64" />
-          <div class={[flex, col]}>
-            <div>
-              {use(state.user?.username)}
-            </div>
-            <div>
-              @{use(state.user?.acct)}
-            </div>
+    <div class={[flex, wevenly, clip, h100, w100, borderbox, padding, gap]}>
+
+      {use(
+        this.width,
+        w => w > 800 &&
+          <div class={[flex, col, gap, w100, h100]}>
+            <Container class={[h100, flex, col, padding, gap]} title="post">
+              <Container class={[flex, padding, borderbox, gap]}>
+                <img src={use(state.user?.avatar)} width="64" height="64" />
+                <div class={[flex, col]}>
+                  <div>
+                    {use(state.user?.username)}
+                  </div>
+                  <div>
+                    @{use(state.user?.acct)}
+                  </div>
+                </div>
+              </Container>
+              <Compose />
+            </Container>
+
+            {use(this.width, w => w < 1200 && notifications || "")}
           </div>
-        </Container>
-        <Compose />
-      </Container>
-      <Container title="feed" class={[flex, col, rule`flex: 1`]}>
+          || ""
+      )}
+      <Container title="feed" class={[flex, col, rule`width: ${use(this.width, w => w > 1200 ? "50%" : (w > 800 ? "60%" : "100%"))}`]}>
         <div class={[flex, "shelf"]}>
           <button>
             home
@@ -83,33 +109,31 @@ self {
             search
           </button>
         </div>
-        <Timeline kind="bubble" />
+        <Timeline kind="public" />
       </Container>
-      <Container class={[padding, borderbox, rule`width: 30%`]} title="notifications">
-        {/* <button on:click={() => this.fetchnotifs()}>notifs :3</button> */}
-        <div class={[flex, col, scrolly, h100, gap]}>
-          {use(this.notifs)}
-        </div>
-      </Container>
+      {use(this.width, w => w > 1200 && notifications || "")}
     </div>
   )
 
 }
+
+
+
 App.prototype.fetchnotifs = async function() {
   let req = await fetch("/api/v1/notifications?limit=20" + (this.notifs_since_id && `&since_id=${this.notifs_since_id}` || ""));
   let notifs = await req.json();
 
-  console.log(notifs);
-  for (const notification of notifs.reverse()) {
+  if (notifs.length > 0)
+    this.notifs_since_id = notifs[0].id;
+  for (const notification of notifs) {
     const { account, id, created_at, status, type } = notification;
     if (status)
-      parseStatus(status);
+      await parseStatus(status);
 
 
     let view = <NotificationView notification={notification} />;
 
     this.notifs = [...this.notifs, view];
-    this.notifs_since_id = id;
   }
 }
 
@@ -124,14 +148,19 @@ export type Notification = {
 export type NotificationView = DLComponent<{
   notification: Notification
 }>
+let notcss = css`
+.img {
+  border-radius: 5px;
+}
+`;
 export function NotificationView(this: NotificationView) {
-
+  this.css = notcss;
   let status = statuses.get(this.notification.status?.id);
 
   return (
-    <div class={[flex]}>
+    <div class={[flex, gap, borderbox, w100]}>
       <div>
-        <img src={this.notification.account.avatar} width="32" height="32" />
+        <img class="img" src={this.notification.account.avatar} width="32" height="32" />
       </div>
       <div class={[flex, col, rule`flex: 1`]}>
         <div>
@@ -204,8 +233,10 @@ export function Container(this: DLComponent<{ class: any, title: string }>) {
 
 function Home() {
   console.log("Ghu")
+  this.b = "asd";
   return <div>
-    asd
+    <input bind:value={use(this.b)} />
+    {use(this.b)} is {use(this.b, b => (b % 2 == 0) && "even" || "odd")}
   </div>
 }
 

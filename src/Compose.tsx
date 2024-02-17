@@ -43,7 +43,7 @@ export function Compose(this: Compose) {
             <textarea
                 bind:value={use(this.content)}
                 placeholder="shitpost here"
-                class={[w100, h100, rule`resize: none; box-sizing: border-box`]}
+                class={[w100, h100, rule`resize: none`, borderbox]}
             />
 
             <div class={[flex, w100]}>

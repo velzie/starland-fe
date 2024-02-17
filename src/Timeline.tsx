@@ -1,5 +1,5 @@
 import { Post } from "./Post";
-import { flex, wevenly, hcenter, col, h100, scrolly, gap, clip } from "./css";
+import { flex, wevenly, hcenter, col, h100, scrolly, gap, clip, padding, borderbox, w100 } from "./css";
 import { parseStatus, Status } from "./state";
 import { PostTree } from "./PostTree";
 
@@ -26,7 +26,7 @@ export function Timeline(this: Timeline) {
     this.max_id = statuses[statuses.length - 1].id;
 
     for (const status of statuses) {
-      parseStatus(status);
+      await parseStatus(status);
       this.posts = [...this.posts, await this.addpost(status)];
     }
     console.log(this.max_id, this.since_id);
@@ -42,8 +42,8 @@ export function Timeline(this: Timeline) {
   };
 
   return (
-    <div class={[flex, col, hcenter, h100, clip]}>
-      <div bind:this={use(this.postsroot)} class={[flex, col, hcenter, gap, scrolly, rule`scrollbar-width: none`]}>
+    <div class={[flex, col, hcenter, h100, clip, padding, borderbox]}>
+      <div bind:this={use(this.postsroot)} class={[w100, flex, col, hcenter, gap, scrolly, rule`scrollbar-width: none`]}>
         {use(this.posts)}
       </div>
     </div>
@@ -52,7 +52,7 @@ export function Timeline(this: Timeline) {
 Timeline.prototype.addpost = async function(this: Timeline, status: Status) {
 
   if (status.reblog) {
-    parseStatus(status.reblog);
+    await parseStatus(status.reblog);
 
     let timestamp = new Date(status.reblog.created_at);
 
@@ -73,9 +73,13 @@ Timeline.prototype.fetchup = async function(this: Timeline) {
   let req = await fetch(`/api/v1/timelines/${this.kind}?limit=20&since_id=${this.since_id}`);
   let statuses: Status[] = await req.json();
 
+
+  if (statuses.length > 0)
+    this.since_id = statuses[0].id;
+
   for (const status of statuses) {
 
-    parseStatus(status);
+    await parseStatus(status);
 
     this.posts = [await this.addpost(status), ...this.posts];
   }
@@ -87,7 +91,7 @@ Timeline.prototype.fetchdown = async function(this: Timeline) {
   this.max_id = statuses[statuses.length - 1].id;
   console.log(statuses);
   for (const status of statuses) {
-    parseStatus(status);
+    await parseStatus(status);
 
     this.posts = [...this.posts, await this.addpost(status)];
   }
