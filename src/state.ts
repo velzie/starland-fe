@@ -1,7 +1,7 @@
 export const state: {
     user: Account | null
 } = stateful({
-    user: {}
+    user: {} as any
 });
 
 
@@ -44,7 +44,9 @@ export type Status = {
 
 export type KnownStatus = Stateful<{
     object: Stateful<Status>
-    key: string
+    favouriting: boolean
+    reblogging: boolean
+    id: string
 }>
 
 export const statuses: Map<string, KnownStatus> = new Map;
@@ -61,7 +63,7 @@ export const accounts: Map<string, KnownAccount> = new Map;
 
 
 export async function parseStatus(object: Status): Promise<KnownStatus> {
-    const { id } = object;
+    const { id, in_reply_to_id, reblog } = object;
 
     for (let acc of object.mentions) {
         if (!accounts.has(acc.id)) {
@@ -71,13 +73,26 @@ export async function parseStatus(object: Status): Promise<KnownStatus> {
         }
     }
 
+    if (reblog) {
+        await parseStatus(reblog);
+    }
+
+    if (in_reply_to_id) {
+        // /context
+        let resp = await fetch(`/api/v1/statuses/${in_reply_to_id}`);
+        let status = await resp.json();
+        await parseStatus(status);
+    }
+
     if (statuses.has(id)) {
         let tl = statuses.get(id)!;
         tl.object = stateful(object);
         return tl;
     } else {
-        let withstate = stateful({
-            key: id,
+        let withstate: KnownStatus = stateful({
+            id,
+            favouriting: false,
+            reblogging: false,
             object: stateful(object),
         });
         statuses.set(id, withstate);

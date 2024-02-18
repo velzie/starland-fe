@@ -2,17 +2,6 @@ import { sendForm } from "./api";
 import { borderbox, col, flex, gap, h100, w100 } from "./css";
 import { Container } from "./main";
 
-export type Compose = DLComponent<{
-    content: string
-    // gahd damn liberals
-    cw: string
-    sending: boolean
-    inputelm: HTMLElement
-    replyto: string
-
-    onsend?: () => void
-}>;
-
 let style = css`
 
 self {
@@ -31,7 +20,15 @@ button {
 `;
 
 let grayed = rule`background-color: blue`;
-export function Compose(this: Compose) {
+export const Compose: Component<{
+    content?: string
+    // gahd damn liberals
+    cw?: string
+    onsend?: () => void
+}, {
+    inputelm: HTMLElement
+    sending: boolean
+}> = function() {
     this.css = style;
 
     this.content ??= "";
@@ -55,7 +52,7 @@ export function Compose(this: Compose) {
                     $el.classList.toggle(grayed);
                     try {
                         await sendForm("/api/v1/statuses", {
-                            status: this.content,
+                            status: this.content!,
                             source: "Pleroma for Nintendo DS",
                             visibility: "direct",
                             content_type: "text/plain",

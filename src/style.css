@@ -3,7 +3,6 @@
   --accent: #1db954;
   --text: #FFFFFF;
 
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -28,4 +27,8 @@ body, html, #app {
 * {
   margin: 0;
   outline: none;
+}
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
 }

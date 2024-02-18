@@ -1,14 +1,13 @@
-import { flex, gap, hcenter } from "./css"
+import { flex, gap, hcenter, inlineflex, wcenter } from "./css"
 import { Account } from "./state"
 
-export type AccountView = DLComponent<{
+export const AccountView: Component<{
     account: Account
-    showpfp: boolean
-    showfavicon: boolean
-}>
-export function AccountView(this: AccountView) {
+    showpfp?: boolean
+    showfavicon?: boolean
+}, {}> = function() {
     return (
-        <div class={[flex, hcenter]}>
+        <div class={[inlineflex, hcenter, rule`gap: 3px`]}>
             {this.showpfp &&
                 <img src={this.account?.avatar} width="16" height="16" />
                 || ""

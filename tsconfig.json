@@ -18,6 +18,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": false,
+    "noImplicitAny": false,
 
     "jsx":"react",
     "jsxFactory":"h",

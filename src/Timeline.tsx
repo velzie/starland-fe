@@ -1,19 +1,19 @@
 import { Post } from "./Post";
 import { flex, wevenly, hcenter, col, h100, scrolly, gap, clip, padding, borderbox, w100 } from "./css";
-import { parseStatus, Status } from "./state";
+import { KnownStatus, parseStatus, Status } from "./state";
 import { PostTree } from "./PostTree";
 
-export type Timeline = DLComponent<{
-  posts: DLElement<Post>[]
-  since_id: string
-  max_id: string
+export const Timeline: Component<{
   kind: string
+}, {
+  since_id: string
+  posts: ComponentElement<typeof Post>[]
+  max_id: string
   postsroot: HTMLElement
   fetchup: () => void
   fetchdown: () => void
-  addpost: (status: Status) => Promise<DLElement<Post>>
-}>
-export function Timeline(this: Timeline) {
+  addpost: (status: KnownStatus) => Promise<ComponentElement<typeof Post>>
+}> = function() {
   this.posts = [];
   this.since_id = ""
 
@@ -26,17 +26,18 @@ export function Timeline(this: Timeline) {
     this.max_id = statuses[statuses.length - 1].id;
 
     for (const status of statuses) {
-      await parseStatus(status);
-      this.posts = [...this.posts, await this.addpost(status)];
+      let known = await parseStatus(status);
+      this.posts = [...this.posts, await this.addpost(known)];
+
     }
     console.log(this.max_id, this.since_id);
 
 
     setInterval(() => {
-      this.fetchup();
+      // this.fetchup();
       if (this.postsroot.scrollTop > this.postsroot.scrollHeight - 2000) {
         console.log("FUCK!!");
-        this.fetchdown();
+        // this.fetchdown();
       }
     }, 1000);
   };
@@ -49,27 +50,15 @@ export function Timeline(this: Timeline) {
     </div>
   )
 }
-Timeline.prototype.addpost = async function(this: Timeline, status: Status) {
-
-  if (status.reblog) {
-    await parseStatus(status.reblog);
-
-    let timestamp = new Date(status.reblog.created_at);
-
-    let post = <Post id={status.reblog.id} timestamp={timestamp} reblog={status.id} />;
-
-    return post;
-  } else {
-    let timestamp = new Date(status.created_at);
-
-    let post = <PostTree id={status.id} timestamp={timestamp} />;
-    return post;
-  }
+Timeline.prototype.addpost = async function(this: ThisParameterType<typeof Timeline>, status: KnownStatus) {
+  console.log(status);
+  let post = <PostTree post={status} />;
+  return post;
 
   // this.posts = this.posts.sort(({ $: { timestamp: a } }: { $: Post }, { $: { timestamp: b } }: { $: Post }) => a < b && 1 || -1);
 
 }
-Timeline.prototype.fetchup = async function(this: Timeline) {
+Timeline.prototype.fetchup = async function(this: ThisParameterType<typeof Timeline>) {
   let req = await fetch(`/api/v1/timelines/${this.kind}?limit=20&since_id=${this.since_id}`);
   let statuses: Status[] = await req.json();
 
@@ -79,20 +68,21 @@ Timeline.prototype.fetchup = async function(this: Timeline) {
 
   for (const status of statuses) {
 
-    await parseStatus(status);
+    let known = await parseStatus(status);
 
-    this.posts = [await this.addpost(status), ...this.posts];
+    this.posts = [await this.addpost(known), ...this.posts];
   }
 };
 
-Timeline.prototype.fetchdown = async function(this: Timeline) {
+Timeline.prototype.fetchdown = async function(this: ThisParameterType<typeof Timeline>) {
   let req = await fetch(`/api/v1/timelines/${this.kind}?limit=20&max_id=${this.max_id}`);
   let statuses: Status[] = await req.json();
-  this.max_id = statuses[statuses.length - 1].id;
-  console.log(statuses);
-  for (const status of statuses) {
-    await parseStatus(status);
 
-    this.posts = [...this.posts, await this.addpost(status)];
+  if (statuses.length == 0) return;
+  this.max_id = statuses[statuses.length - 1].id;
+  for (const status of statuses) {
+    let known = await parseStatus(status);
+
+    this.posts = [...this.posts, await this.addpost(known)];
   }
 };

@@ -10,3 +10,4 @@ export const scrolly = rule`overflow-y: scroll`;
 export const borderbox = rule`box-sizing: border-box`
 export const gap = rule`gap: 1em`
 export const padding = rule`padding: 1em`
+export const inlineflex = rule`display: inline-flex`

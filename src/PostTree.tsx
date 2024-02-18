@@ -1,9 +1,7 @@
-import { borderbox, w100 } from "./css";
+import { borderbox, col, flex, gap, w100 } from "./css";
 import { Post } from "./Post"
+import { KnownStatus, statuses } from "./state";
 
-export type PostTree = DLComponent<{
-    id: string
-}>
 
 let tcss = css`
 self {
@@ -15,15 +13,38 @@ self {
     border-radius: 10px;
     background: #1a1a1a;
 }
+.indent {
+    padding-left: 2em;
+}
 `;
-export function PostTree(this: PostTree) {
+export const PostTree: Component<{
+    post: KnownStatus
+}, {}> = function() {
     this.css = tcss;
 
-    // api/v1/statuses/AewePz6DKs0pNKk5DM/context
+
+
+    let post = this.post;
+    let reblog: KnownStatus = null!;
+    if (post.object.reblog) {
+        console.log(this.post.object.reblog);
+        post = statuses.get(post.object.reblog.id)!;
+        reblog = post;
+    }
+
+    let reply_to_id = post.object.in_reply_to_id
+
+    let reply_to_post = statuses.get(reply_to_id!)!;
 
     return (
-        <div class={[w100, borderbox]}>
-            <Post id={this.id} timestamp={new Date} />
+        <div class={[w100, borderbox, flex, col, gap]}>
+            {reply_to_id &&
+                <Post post={reply_to_post} />
+                || ""
+            }
+            <div class={[reply_to_id && "indent"]}>
+                <Post post={post} reblog={reblog} hidereplyto />
+            </div>
         </div>
     )
 }

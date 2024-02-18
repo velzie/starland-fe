@@ -1,5 +1,7 @@
 import './style.css'
 import "@mercuryworkshop/alicejs";
+import '@fontsource/poppins';
+import '@fontsource-variable/rubik';
 import 'iconify-icon';
 
 import { Route, Router } from "@mercuryworkshop/dreamland-router";
@@ -14,13 +16,12 @@ import { ContentRenderer, Post } from './Post';
 
 
 
-export type App = DLComponent<{
+const App: Component<{}, {
   notifs_since_id: string | null
-  notifs: DLElement<NotificationView>[]
+  notifs: ComponentElement<typeof NotificationView>[]
   width: number
   fetchnotifs: () => void
-}>
-function App(this: App): DLElement<App> {
+}> = function() {
   this.css = css`
 self {
   /* height: 100%; */
@@ -42,6 +43,7 @@ self {
 
   this.notifs = [];
 
+  this.width = window.innerWidth
   this.mount = async () => {
     await auth();
 
@@ -51,7 +53,6 @@ self {
       this.fetchnotifs();
     }, 5000);
 
-    this.width = window.innerWidth
     window.addEventListener("resize", () => {
       this.width = window.innerWidth
     });
@@ -59,7 +60,7 @@ self {
 
 
   const notifications = (<Container class={[padding, borderbox, w100, h100]} title="notifications">
-    <div class={[flex, col, scrolly, h100, w100, gap, rule`scrollbar-width: none`]}>
+    <div class={[flex, col, scrolly, h100, w100, gap, rule`scrollbar-width: none; padding-right: 1em`]}>
       {use(this.notifs)}
     </div>
   </Container>
@@ -71,8 +72,8 @@ self {
       {use(
         this.width,
         w => w > 800 &&
-          <div class={[flex, col, gap, w100, h100]}>
-            <Container class={[h100, flex, col, padding, gap]} title="post">
+          <div class={[flex, col, gap, h100, rule`width: min-content`]}>
+            <Container class={[flex, col, padding, gap]} title="post">
               <Container class={[flex, padding, borderbox, gap]}>
                 <img src={use(state.user?.avatar)} width="64" height="64" />
                 <div class={[flex, col]}>
@@ -91,7 +92,7 @@ self {
           </div>
           || ""
       )}
-      <Container title="feed" class={[flex, col, rule`width: ${use(this.width, w => w > 1200 ? "50%" : (w > 800 ? "60%" : "100%"))}`]}>
+      <Container title="feed" class={[flex, col, clip, rule`flex: 1`]}>
         <div class={[flex, "shelf"]}>
           <button>
             home
@@ -109,9 +110,13 @@ self {
             search
           </button>
         </div>
-        <Timeline kind="public" />
+        <Timeline kind="home" />
       </Container>
-      {use(this.width, w => w > 1200 && notifications || "")}
+      {use(this.width, w => w > 1200 &&
+        <div class={[rule`width: min-content`]}>
+          {notifications}
+        </div>
+        || "")}
     </div>
   )
 
@@ -145,17 +150,17 @@ export type Notification = {
   status: Status
   type: "mention" | "favourite" | "reblog"
 };
-export type NotificationView = DLComponent<{
-  notification: Notification
-}>
+
 let notcss = css`
 .img {
   border-radius: 5px;
 }
 `;
-export function NotificationView(this: NotificationView) {
+export const NotificationView: Component<{
+  notification: Notification
+}, {}> = function() {
   this.css = notcss;
-  let status = statuses.get(this.notification.status?.id);
+  let status = statuses.get(this.notification.status?.id)!;
 
   return (
     <div class={[flex, gap, borderbox, w100]}>
@@ -171,7 +176,7 @@ export function NotificationView(this: NotificationView) {
         <div>
 
           {this.notification.type === "mention" &&
-            <Post id={this.notification.status.id} timestamp={new Date} hideauthor />
+            <Post post={statuses.get(this.notification.status.id)!} hideauthor />
             || this.notification.type === "favourite" &&
             <div>
               <ContentRenderer post={status} />
@@ -182,7 +187,7 @@ export function NotificationView(this: NotificationView) {
     </div>)
 }
 
-export function Container(this: DLComponent<{ class: any, title: string }>) {
+export const Container: Component<{ class: any, title?: string }, {}> = function() {
   this.css = css`
   self {
     position: relative;
@@ -231,14 +236,14 @@ export function Container(this: DLComponent<{ class: any, title: string }>) {
   )
 }
 
-function Home() {
-  console.log("Ghu")
-  this.b = "asd";
-  return <div>
-    <input bind:value={use(this.b)} />
-    {use(this.b)} is {use(this.b, b => (b % 2 == 0) && "even" || "odd")}
-  </div>
-}
+// function Home() {
+//   console.log("Ghu")
+//   this.b = "asd";
+//   return <div>
+//     <input bind:value={use(this.b)} />
+//     {use(this.b)} is {use(this.b, b => (b % 2 == 0) && "even" || "odd")}
+//   </div>
+// }
 
 // export const app: App = (<App />).$;
 

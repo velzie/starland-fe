@@ -1,7 +1,7 @@
 import { Compose } from "./Compose";
 import { send, sendForm as sendForm } from "./api";
 import { flex, col, wevenly, hcenter, w100, gap, borderbox } from "./css";
-import { accounts, KnownStatus, parseStatus, statuses } from "./state";
+import { accounts, KnownStatus, parseStatus, Status, statuses } from "./state";
 import { AccountView } from "./AccountView";
 
 let postcss = css`
@@ -16,7 +16,20 @@ button {
   gap: 8px;
   align-items: center;
   font-family: monospace;
+  cursor: pointer;
 }
+button:hover {
+  transform: scale(110%);
+}
+
+button.activated iconify-icon {
+  color: yellow;
+}
+
+button.spin iconify-icon {
+  animation: spin 1s infinite linear;
+}
+
 
 img {
   border-radius: 5px;
@@ -37,21 +50,22 @@ export function getRelativeTimeString(
   return rtf.format(Math.floor(deltaSeconds / divisor), units[unitIndex]);
 }
 
-export type Post = DLComponent<{
-  id: string
-  reblog: string | null
+export const Post: Component<{
+  post: KnownStatus
+  reblog?: KnownStatus
+
+  showcompose?: boolean
+  hideauthor?: boolean
+  hidereplyto?: boolean
+}, {
   timestamp: Date
-  showcompose: boolean
-  hideauthor: boolean
-}>
-export function Post(this: Post) {
+}> = function() {
   this.css = postcss;
   this.showcompose = false;
 
 
-  let post = statuses.get(this.id)!;
-  let reblog = this.reblog && statuses.get(this.reblog)?.object;
-
+  let post = this.post;
+  let reblog = this.reblog?.object;
 
 
 
@@ -69,7 +83,7 @@ export function Post(this: Post) {
         !this.hideauthor &&
         <div class={[flex, wevenly, hcenter]}>
           <div class={[flex, hcenter, gap]}>
-            <img src={post.object.account.avatar} width="48" height="48" />
+            <img src={post.object.account.avatar} width="32" height="32" />
             <div class={[flex, col]}>
               <h3>
                 {post.object.account.display_name}
@@ -87,11 +101,11 @@ export function Post(this: Post) {
         || ""
       }
       {
-        post.object.in_reply_to_account_id &&
+        !this.hidereplyto && post.object.in_reply_to_account_id &&
         <div class={[flex, hcenter, rule`gap: 0.3em`]}>
           <iconify-icon icon="prime:reply" />
           reply to
-          <AccountView account={accounts.get(post.object.in_reply_to_account_id)?.account} showpfp />
+          <AccountView account={accounts.get(post.object.in_reply_to_account_id)?.account!} showpfp />
         </div>
         || ""
       }
@@ -102,18 +116,43 @@ export function Post(this: Post) {
           {use(post.object.replies_count)}
         </button>
 
-        <button on:click={async () => {
-          let post = await send(`/api/v1/statuses/${this.id}/favourite`, {});
-          await parseStatus(post);
-        }}>
+        <button
+          class={[
+            use(post.object.favourited, f => f && "activated"),
+            use(post.favouriting, f => f && "spin")
+          ]}
+          on:click={async () => {
+            let res;
+            post.favouriting = true;
+            if (!post.object.favourited)
+              res = await send(`/api/v1/statuses/${post.id}/favourite`, {});
+            else
+              res = await send(`/api/v1/statuses/${post.id}/unfavourite`, {});
+            await parseStatus(res);
+            post.favouriting = false;
+          }}>
           <iconify-icon icon="fa:star" />
           {use(post.object.favourites_count)}
         </button>
 
-        <button on:click={async () => {
-          let post = await send(`/api/v1/statuses/${this.id}/reblog`, {});
-          await parseStatus(post);
-        }}>
+        <button
+          class={[
+            use(post.object.reblogged, f => f && "activated"),
+            use(post.reblogging, f => f && "spin")
+          ]}
+
+          on:click={async () => {
+            let res;
+
+            post.reblogging = true;
+            if (!post.object.reblogged)
+              res = await send(`/api/v1/statuses/${post.id}/reblog`, {});
+            else
+              res = await send(`/api/v1/statuses/${post.id}/unreblog`, {});
+            post.reblogging = false;
+
+            await parseStatus(res);
+          }}>
           <iconify-icon icon="fa:retweet" />
           {use(post.object.reblogs_count)}
         </button>
@@ -139,16 +178,35 @@ export function Post(this: Post) {
   )
 }
 
-export type ContentRenderer = DLComponent<{
+export const ContentRenderer: Component<{
   post: KnownStatus
+}, {
   postroot: HTMLElement
-}>;
-export function ContentRenderer(this: ContentRenderer) {
-
+}> = function() {
+  this.css = css`
+self {
+  font-family: 'Rubik', sans-serif;
+  font-size: 11pt;
+}
+`;
   this.mount = () => {
+    handle(use(this.post.object.content), content => {
+      for (let emoji of this.post.object.emojis) {
+        content = content.replaceAll(`:${emoji.shortcode}:`, `<img src="${emoji.url}" alt="${emoji.shortcode}" width="16" height="16" />`);
+      }
+      this.postroot.innerHTML = content;
 
-    // TODO sanitize
-    handle(use(this.post.object.content), content => this.postroot.innerHTML = content);
+      for (const link of this.postroot.querySelectorAll(".h-card .u-url.mention")) {
+        let id = link.getAttribute("data-user");
+        if (id) {
+          let acc = accounts.get(id);
+
+          link.parentElement!.replaceWith(<AccountView showpfp account={acc?.account!} />)
+        }
+      }
+
+
+    });
   }
 
   return (
