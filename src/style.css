@@ -1,6 +1,7 @@
 :root {
   --surface: #121212;
   --accent: #1db954;
+  --accent-inactive: #1ed760;
   --text: #FFFFFF;
 
   line-height: 1.5;

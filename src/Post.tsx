@@ -3,6 +3,7 @@ import { send, sendForm as sendForm } from "./api";
 import { flex, col, wevenly, hcenter, w100, gap, borderbox } from "./css";
 import { accounts, KnownStatus, parseStatus, Status, statuses } from "./state";
 import { AccountView } from "./AccountView";
+import { ContentRenderer } from "./ContentRenderer";
 
 let postcss = css`
 self {
@@ -173,47 +174,6 @@ export const Post: Component<{
           onsend={() => this.showcompose = false}
           content={["@" + post.object.account.acct, ...post.object.mentions.map(acc => "@" + acc.acct)].join(" ")}
         />
-      </div>
-    </div>
-  )
-}
-
-export const ContentRenderer: Component<{
-  post: KnownStatus
-}, {
-  postroot: HTMLElement
-}> = function() {
-  this.css = css`
-self {
-  font-family: 'Rubik', sans-serif;
-  font-size: 11pt;
-}
-`;
-  this.mount = () => {
-    handle(use(this.post.object.content), content => {
-      for (let emoji of this.post.object.emojis) {
-        content = content.replaceAll(`:${emoji.shortcode}:`, `<img src="${emoji.url}" alt="${emoji.shortcode}" width="16" height="16" />`);
-      }
-      this.postroot.innerHTML = content;
-
-      for (const link of this.postroot.querySelectorAll(".h-card .u-url.mention")) {
-        let id = link.getAttribute("data-user");
-        if (id) {
-          let acc = accounts.get(id);
-
-          link.parentElement!.replaceWith(<AccountView showpfp account={acc?.account!} />)
-        }
-      }
-
-
-    });
-  }
-
-  return (
-    <div>
-      <div bind:this={use(this.postroot)} />
-      <div class={[flex, col]}>
-        {this.post.object.media_attachments.map(a => <img src={a.remote_url} alt={a.description} />)}
       </div>
     </div>
   )

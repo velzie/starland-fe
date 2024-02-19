@@ -1,6 +1,6 @@
 import { sendForm } from "./api";
 import { borderbox, col, flex, gap, h100, w100 } from "./css";
-import { Container } from "./main";
+import { Container } from "./Container";
 
 let style = css`
 
