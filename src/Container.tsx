@@ -1,4 +1,4 @@
-export const Container: Component<{ class: any, title?: string }, {}> = function() {
+export const Container: Component<{ class?: any, title?: string }, { children: any }> = function() {
   this.css = css`
   self {
     position: relative;

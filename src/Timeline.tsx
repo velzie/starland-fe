@@ -30,13 +30,13 @@ export const Timeline: Component<{
       this.posts = [...this.posts, await this.addpost(known)];
 
     }
-    console.log(this.max_id, this.since_id);
+    // console.log(this.max_id, this.since_id);
 
 
     setInterval(() => {
       // this.fetchup();
       if (this.postsroot.scrollTop > this.postsroot.scrollHeight - 2000) {
-        console.log("FUCK!!");
+        // console.log("FUCK!!");
         // this.fetchdown();
       }
     }, 1000);
@@ -51,7 +51,7 @@ export const Timeline: Component<{
   )
 }
 Timeline.prototype.addpost = async function(this: ThisParameterType<typeof Timeline>, status: KnownStatus) {
-  console.log(status);
+  // console.log(status);
   let post = <PostTree post={status} />;
   return post;
 

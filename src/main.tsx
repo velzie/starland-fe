@@ -4,7 +4,7 @@ import '@fontsource/poppins';
 import '@fontsource-variable/rubik';
 import 'iconify-icon';
 
-import { Route, Router } from "@mercuryworkshop/dreamland-router";
+import { Link, Redirect, Route, Router } from "@mercuryworkshop/dreamland-router";
 
 import { flex, wevenly, hcenter, col, scrolly, h100, clip, w100, borderbox, padding, gap } from "./css";
 // import { Post } from "./Post";
@@ -17,26 +17,13 @@ import { Container } from './Container';
 import { Notifications } from './Notifications';
 
 
-
-const App: Component<{}, {
+const Home: Component<{}, {
   width: number
+  outlet: ComponentElement<typeof Timeline>
 }> = function() {
   this.css = css`
 self {
   /* height: 100%; */
-}
-
-.shelf {
-  justify-content: space-evenly;
-  border-bottom: 1px solid var(--accent);
-  
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-.shelf button {
-  background-color: var(--accent);
-  border: none;
-  font-family: monospace;
 }
 `;
 
@@ -79,24 +66,8 @@ self {
           || ""
       )}
       <Container title="feed" class={[flex, col, clip, rule`flex: 1`]}>
-        <div class={[flex, "shelf"]}>
-          <button>
-            home
-          </button>
-          <button>
-            public
-          </button>
-          <button>
-            bubble
-          </button>
-          <button>
-            bookmarks
-          </button>
-          <button>
-            search
-          </button>
-        </div>
-        <Timeline kind="home" />
+        <Navigation />
+        {use(this.outlet)}
       </Container>
       {use(this.width, w => w > 1200 &&
         <div class={[rule`width: min-content`]}>
@@ -108,24 +79,122 @@ self {
 
 }
 
+export const Navigation: Component<{}, {}> = function() {
+  this.css = css`
+self {
+  border-bottom: 1px solid var(--accent);
+  
+  padding: 10px;
+}
+iconify-icon {
+  transform: scale(120%);
+}
+iconify-icon.activated {
+  color: var(--accent);
+}
+button {
+  outline: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+a {
+  color: white;
+}
+`;
 
-// function Home() {
-//   console.log("Ghu")
-//   this.b = "asd";
-//   return <div>
-//     <input bind:value={use(this.b)} />
-//     {use(this.b)} is {use(this.b, b => (b % 2 == 0) && "even" || "odd")}
-//   </div>
-// }
+  return (
+    <div class={[flex, wevenly]}>
+      <div class={[flex, gap]}>
+        <Link href="/feed/home">
+          <iconify-icon icon="fa:home" />
+        </Link>
+        <Link href="/feed/public">
+          <iconify-icon icon="fa:users" />
+        </Link>
+        <Link href="/feed/bubble">
+          <iconify-icon icon="fluent:bubble-multiple-20-filled" />
+        </Link>
+        <Link href="/feed/bookmark">
+          <iconify-icon icon="fa:bookmark" />
+        </Link>
+      </div>
+      <div class={[flex, gap]}>
+        <button>
+          <iconify-icon icon="fa:search" />
+        </button>
+        <Link href="/settings">
+          <iconify-icon icon="fa:gear" />
+        </Link>
+      </div>
+    </div>
+  )
+}
 
-// export const app: App = (<App />).$;
+
+function Settings() {
+  return (
+    <div class={[flex, wevenly, clip, h100, w100, borderbox, padding, gap]}>
+      <Container class={[flex, col, borderbox]} title="Category">
+        <button>
+          a
+        </button>
+      </Container>
+      <Container class={[rule`flex: 1`]} title="Settings">
+
+      </Container>
+    </div>
+  )
+}
+
+function PageNotFound() {
+  return <div>404</div>
+}
+
+function User() {
+  return <div>
+    user w
+    {use(this.id)}
+  </div>
+}
+const Notice: Component<{
+
+}, {
+  id: string
+}> = function() {
+
+  handle(use(this.id), id => {
+
+  })
+
+  return (
+    <div>
+
+    </div>
+  )
+}
 
 export const router = (
-  <Router>
-    <Route path="/" show={() => <App />} />
+  <Route path="/">
+    <Route path="feed" show={<Home />}>
+      <Route path="home" show={<Timeline kind="home" />} />
+      <Route path="public" show={<Timeline kind="public?local=true" />} />
+      <Route path="bubble" show={<Timeline kind="bubble" />} />
+      <Route path="bookmarks" show={<Timeline kind="bookmarks" />} />
+      <Redirect path="" to="/feed/home" />
+    </Route>
+    <Route path="notice">
+      <Route path=":id" show={<Notice />} />
+    </Route>
+    <Route path="user">
+      <Route path=":id" show={<User />} />
+    </Route>
+    <Route path="settings" show={<Settings />} />
 
-  </Router>
+    <Redirect path="" to="/feed" />
+    <Route regex path=".*" show={<PageNotFound />} />
+  </Route>
 ).$
 
-document.querySelector('#app')!.appendChild(router.root);
-router.route(location.pathname);
+router.render(document.querySelector('#app')!);
+(window as any).router = router;

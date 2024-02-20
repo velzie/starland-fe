@@ -5,8 +5,8 @@ import { borderbox, col, flex, gap, h100, padding, scrolly, w100 } from "./css";
 import { Account, Status, parseStatus, statuses } from "./state";
 
 export const Notifications: Component<{
-  fetchnotifs: () => Promise<void>
 }, {
+  fetchnotifs: () => Promise<void>
   notifs_since_id: number
   notifs: ComponentElement<typeof NotificationView>[]
 }> = function() {

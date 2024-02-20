@@ -27,9 +27,9 @@ export const PostTree: Component<{
     let post = this.post;
     let reblog: KnownStatus = null!;
     if (post.object.reblog) {
-        console.log(this.post.object.reblog);
-        post = statuses.get(post.object.reblog.id)!;
+        // console.log(this.post.object.reblog);
         reblog = post;
+        post = statuses.get(post.object.reblog.id)!;
     }
 
     let reply_to_id = post.object.in_reply_to_id

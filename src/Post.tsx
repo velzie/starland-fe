@@ -4,39 +4,7 @@ import { flex, col, wevenly, hcenter, w100, gap, borderbox } from "./css";
 import { accounts, KnownStatus, parseStatus, Status, statuses } from "./state";
 import { AccountView } from "./AccountView";
 import { ContentRenderer } from "./ContentRenderer";
-
-let postcss = css`
-self {
-  /* min-width: 400px; */
-}
-
-button {
-  border: none;
-  background-color: initial;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-family: monospace;
-  cursor: pointer;
-}
-button:hover {
-  transform: scale(110%);
-}
-
-button.activated iconify-icon {
-  color: yellow;
-}
-
-button.spin iconify-icon {
-  animation: spin 1s infinite linear;
-}
-
-
-img {
-  border-radius: 5px;
-}
-
-`;
+import { Link } from "@mercuryworkshop/dreamland-router";
 
 export function getRelativeTimeString(
   date: Date | number,
@@ -61,7 +29,44 @@ export const Post: Component<{
 }, {
   timestamp: Date
 }> = function() {
-  this.css = postcss;
+  this.css = css`
+self {
+  /* min-width: 400px; */
+}
+
+.actions {
+  button {
+    border: none;
+    background-color: initial;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-family: monospace;
+    cursor: pointer;
+  }
+  button:hover {
+    transform: scale(110%);
+  }
+
+  button.activated iconify-icon {
+    color: yellow;
+  }
+
+  button.spin iconify-icon {
+    animation: spin 1s infinite linear;
+  }
+}
+
+.reblogged iconify-icon {
+  transform: scale(130%);
+}
+
+
+img {
+  border-radius: 5px;
+}
+
+`;;
   this.showcompose = false;
 
 
@@ -76,8 +81,12 @@ export const Post: Component<{
   return (
     <div class={[flex, col, w100, borderbox, rule`gap: 0.5em`]}>
       {reblog ? (
-        <div>
-          {reblog.account.display_name} reblogged
+        <div class={[flex, gap, "reblogged"]}>
+          <iconify-icon icon="fa:rocket" />
+          <AccountView account={reblog.account} />
+          <div>
+            reblogged
+          </div>
         </div>
       ) : ""}
       {
@@ -95,9 +104,9 @@ export const Post: Component<{
           <div>
             {use(post.object.id)}
           </div>
-          <div>
+          <Link href={"/notice/" + post.id}>
             {getRelativeTimeString(new Date(post.object.created_at))}
-          </div>
+          </Link>
         </div>
         || ""
       }
@@ -111,7 +120,7 @@ export const Post: Component<{
         || ""
       }
       <ContentRenderer post={post} />
-      <div class={[flex, rule`gap:0.25em`]}>
+      <div class={["actions", flex, rule`gap:0.25em`]}>
         <button on:click={() => this.showcompose = true}>
           <iconify-icon icon="fa:reply" />
           {use(post.object.replies_count)}
