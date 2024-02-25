@@ -1,9 +1,20 @@
+import { LoginCreds } from "./api";
+
 export const state: {
     user: Account | null
 } = stateful({
-    user: {} as any
+    user: null
 });
 
+export const store: {
+    activeacc: number | null
+    accounts: LoginCreds[]
+} = $store({
+    activeacc: null,
+    accounts: []
+}, "store", "localstorage");
+
+Object.assign(window, { state, store });
 
 const API = "/api";
 

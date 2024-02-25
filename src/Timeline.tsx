@@ -1,6 +1,6 @@
 import { Post } from "./Post";
 import { flex, wevenly, hcenter, col, h100, scrolly, gap, clip, padding, borderbox, w100 } from "./css";
-import { KnownStatus, parseStatus, Status } from "./state";
+import { KnownStatus, parseStatus, state, Status } from "./state";
 import { PostTree } from "./PostTree";
 
 export const Timeline: Component<{
@@ -10,6 +10,7 @@ export const Timeline: Component<{
   posts: ComponentElement<typeof Post>[]
   max_id: string
   postsroot: HTMLElement
+  fetchinitial: () => Promise<void>
   fetchup: () => void
   fetchdown: () => void
   addpost: (status: KnownStatus) => Promise<ComponentElement<typeof Post>>
@@ -17,20 +18,29 @@ export const Timeline: Component<{
   this.posts = [];
   this.since_id = ""
 
-  this.mount = async () => {
+  this.fetchinitial = async () => {
 
-    let req = await fetch(`/api/v1/timelines/${this.kind}?limit=20`);
+    let req = await fetch(`/api/v1/${this.kind}?limit=20`);
     let statuses: Status[] = await req.json();
 
-    this.since_id = statuses[0].id;
-    this.max_id = statuses[statuses.length - 1].id;
+    if (statuses.length > 0) {
+      this.since_id = statuses[0].id;
+      this.max_id = statuses[statuses.length - 1].id;
 
-    for (const status of statuses) {
-      let known = await parseStatus(status);
-      this.posts = [...this.posts, await this.addpost(known)];
-
+      for (const status of statuses) {
+        let known = await parseStatus(status);
+        this.posts = [...this.posts, await this.addpost(known)];
+      }
     }
-    // console.log(this.max_id, this.since_id);
+  }
+
+  this.mount = async () => {
+
+    handle(use(state.user), async () => {
+      // clear everything when user changes
+      this.posts = [];
+      await this.fetchinitial();
+    });
 
 
     setInterval(() => {
@@ -43,8 +53,8 @@ export const Timeline: Component<{
   };
 
   return (
-    <div class={[flex, col, hcenter, h100, clip, padding, borderbox]}>
-      <div bind:this={use(this.postsroot)} class={[w100, flex, col, hcenter, gap, scrolly, rule`scrollbar-width: none`]}>
+    <div class={[flex, col, hcenter, h100, padding, borderbox]}>
+      <div bind:this={use(this.postsroot)} class={[w100, flex, col, hcenter, gap, rule`scrollbar-width: none`]}>
         {use(this.posts)}
       </div>
     </div>

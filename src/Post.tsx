@@ -49,7 +49,7 @@ self {
   }
 
   button.activated iconify-icon {
-    color: yellow;
+    color: var(--accent);
   }
 
   button.spin iconify-icon {
@@ -64,6 +64,13 @@ self {
 
 img {
   border-radius: 5px;
+}
+
+.authorshelf {
+  a {
+    text-decoration: none;
+    color: var(--text);
+  }
 }
 
 `;;
@@ -91,8 +98,8 @@ img {
       ) : ""}
       {
         !this.hideauthor &&
-        <div class={[flex, wevenly, hcenter]}>
-          <div class={[flex, hcenter, gap]}>
+        <div class={[flex, wevenly, hcenter, "authorshelf"]}>
+          <Link href={`/feed/user/` + post.object.account.id} class={[flex, hcenter, gap]}>
             <img src={post.object.account.avatar} width="32" height="32" />
             <div class={[flex, col]}>
               <h3>
@@ -100,11 +107,11 @@ img {
               </h3>
               {post.object.account.acct}
             </div>
-          </div>
+          </Link>
           <div>
             {use(post.object.id)}
           </div>
-          <Link href={"/notice/" + post.id}>
+          <Link href={"/feed/notice/" + post.id}>
             {getRelativeTimeString(new Date(post.object.created_at))}
           </Link>
         </div>
@@ -178,12 +185,12 @@ img {
         </button>
       </div>
 
-      <div if={use(this.showcompose)}>
+      {$if(use(this.showcompose),
         <Compose
           onsend={() => this.showcompose = false}
           content={["@" + post.object.account.acct, ...post.object.mentions.map(acc => "@" + acc.acct)].join(" ")}
         />
-      </div>
+      )}
     </div>
   )
 }

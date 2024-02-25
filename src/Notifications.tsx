@@ -2,7 +2,7 @@ import { Container } from "./Container";
 import { ContentRenderer } from "./ContentRenderer";
 import { Post } from "./Post";
 import { borderbox, col, flex, gap, h100, padding, scrolly, w100 } from "./css";
-import { Account, Status, parseStatus, statuses } from "./state";
+import { Account, Status, parseStatus, state, statuses } from "./state";
 
 export const Notifications: Component<{
 }, {
@@ -11,7 +11,6 @@ export const Notifications: Component<{
   notifs: ComponentElement<typeof NotificationView>[]
 }> = function() {
   this.notifs = [];
-
   this.fetchnotifs = async function() {
     let req = await fetch("/api/v1/notifications?limit=20" + (this.notifs_since_id && `&since_id=${this.notifs_since_id}` || ""));
     let notifs = await req.json();
@@ -30,16 +29,32 @@ export const Notifications: Component<{
     }
   }
 
+  handle(use(state.user), async () => {
+    // clear notifs when user changes
+    this.notifs = [];
+    await this.fetchnotifs();
+  });
+
+
+
   this.mount = () => {
     setInterval(() => {
-      this.fetchnotifs();
+      if (state.user)
+        this.fetchnotifs();
     }, 5000);
   }
 
   return (
     <Container class={[padding, borderbox, w100, h100]} title="notifications">
-      <div class={[flex, col, scrolly, h100, w100, gap, rule`scrollbar-width: none; padding-right: 1em`]}>
-        {use(this.notifs)}
+      <div>
+        {$if(use(state.user),
+          <div class={[flex, col, scrolly, h100, w100, gap, rule`scrollbar-width: none; padding-right: 1em`]}>
+            {use(this.notifs)}
+          </div>,
+          <div>
+            Sign in to see notifications
+          </div>
+        )}
       </div>
     </Container>
   );

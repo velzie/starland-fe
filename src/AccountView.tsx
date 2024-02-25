@@ -22,7 +22,7 @@ img {
 }
 `;
     return (
-        <div class={[inlineflex, hcenter, rule`gap: 3px`]}>
+        <span class={[inlineflex, hcenter, rule`gap: 3px`]}>
             {this.showpfp &&
                 <img src={this.account?.avatar} width="16" height="16" />
                 || ""
@@ -35,6 +35,6 @@ img {
                 <img src={this.account?.pleroma?.favicon} width="16" height="16" />
                 || ""
             }
-        </div>
+        </span>
     )
 }
