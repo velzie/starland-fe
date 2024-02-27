@@ -61,15 +61,14 @@ self {
   transform: scale(130%);
 }
 
-
-img {
-  border-radius: 5px;
-}
-
 .authorshelf {
   a {
     text-decoration: none;
     color: var(--text);
+  }
+
+  img {
+    border-radius: 5px;
   }
 }
 
@@ -91,9 +90,12 @@ img {
         <div class={[flex, gap, "reblogged"]}>
           <iconify-icon icon="fa:rocket" />
           <AccountView account={reblog.account} />
-          <div>
+          <span>
             reblogged
-          </div>
+          </span>
+          <span>
+            {getRelativeTimeString(new Date(post.object.created_at))}
+          </span>
         </div>
       ) : ""}
       {
@@ -189,6 +191,7 @@ img {
         <Compose
           onsend={() => this.showcompose = false}
           content={["@" + post.object.account.acct, ...post.object.mentions.map(acc => "@" + acc.acct)].join(" ")}
+          replyto={post}
         />
       )}
     </div>

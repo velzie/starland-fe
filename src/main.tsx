@@ -58,7 +58,7 @@ self {
           {$if(use(this.width, w => w < 1200), notifications)}
         </div>
       )}
-      <Container title="feed" class={[flex, col, clip, rule`flex: 1`]}>
+      <Container title="feed" class={[flex, col, rule`flex: 1`]}>
         <Navigation />
         {use(this.outlet)}
       </Container>

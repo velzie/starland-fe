@@ -53,7 +53,7 @@ export const Timeline: Component<{
   };
 
   return (
-    <div class={[flex, col, hcenter, h100, padding, borderbox]}>
+    <div class={[flex, col, hcenter, h100, padding, borderbox, scrolly]}>
       <div bind:this={use(this.postsroot)} class={[w100, flex, col, hcenter, gap, rule`scrollbar-width: none`]}>
         {use(this.posts)}
       </div>

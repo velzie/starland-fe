@@ -14,7 +14,7 @@ self {
 }
 
 .embed {
-  max-width: 400px;
+  max-width: 300px;
 
 }
 `;

@@ -1,9 +1,30 @@
 import { sendForm } from "./api";
-import { borderbox, col, flex, gap, h100, scrolly, w100, wevenly } from "./css";
+import { borderbox, col, flex, gap, h100, hcenter, scrolly, w100, wevenly } from "./css";
 import { Container } from "./Container";
+import { KnownStatus } from "./state";
 
-let style = css`
+const Visibility = {
+    direct: 0,
+    private: 1,
+    local: 2,
+    unlisted: 3,
+    public: 4
+} as const;
 
+let grayed = rule`background-color: blue`;
+export const Compose: Component<{
+    replyto?: KnownStatus
+    content?: string
+    // gahd damn liberals
+    cw?: string
+    onsend?: () => void
+}, {
+    files: ComponentElement<typeof FileView>[]
+    inputelm: HTMLElement
+    sending: boolean
+    visibility: keyof typeof Visibility
+}> = function() {
+    this.css = css`
 self {
     gap: 0.5em;
 }
@@ -17,20 +38,14 @@ button {
     border: none;
     background-color: var(--accent);
 }
-`;
 
-let grayed = rule`background-color: blue`;
-export const Compose: Component<{
-    content?: string
-    // gahd damn liberals
-    cw?: string
-    onsend?: () => void
-}, {
-    files: ComponentElement<typeof FileView>[]
-    inputelm: HTMLElement
-    sending: boolean
-}> = function() {
-    this.css = style;
+.visibility {
+    .active {
+        color: var(--accent);
+    }
+}
+`;
+    this.visibility = this.replyto?.object.visibility || "public";
 
     this.files = [];
     this.content ??= "";
@@ -57,21 +72,43 @@ export const Compose: Component<{
                 </div>
             )}
 
-            <div class={[flex, w100]}>
-                <div>
-                    visibility
+            <div class={[flex, hcenter, w100, gap]}>
+                <div class={[flex, hcenter, gap, "visibility"]}>
+                    <iconify-icon class={[use(this.visibility, (v: any) => v == "direct" && "active")]} on:click={() => this.visibility = "direct"} icon="fa:envelope" />
+                    {
+                        !this.replyto || Visibility[this.replyto.object.visibility] > Visibility.direct ?
+                            <>
+                                <iconify-icon class={[use(this.visibility, (v: any) => v == "private" && "active")]} on:click={() => this.visibility = "private"} icon="fa:lock" />
+                                {
+                                    !this.replyto || Visibility[this.replyto.object.visibility] > Visibility.private ?
+                                        <>
+                                            <iconify-icon class={[use(this.visibility, (v: any) => v == "unlisted" && "active")]} on:click={() => this.visibility = "unlisted"} icon="fa-solid:lock-open" />
+                                            {
+                                                !this.replyto || Visibility[this.replyto.object.visibility] > Visibility.unlisted ?
+                                                    <iconify-icon class={[use(this.visibility, (v: any) => v == "public" && "active")]} on:click={() => this.visibility = "public"} icon="fa:globe" />
+                                                    : ""
+                                            }
+                                        </>
+                                        : ""
+                                }
+                            </>
+                            : ""
+                    }
                 </div>
                 <button class={[grayed]} on:click={async () => {
                     this.sending = true;
                     $el.classList.toggle(grayed);
                     try {
-                        await sendForm("/api/v1/statuses", {
+                        let payload: any = {
                             status: this.content!,
                             source: "Pleroma for Nintendo DS",
-                            visibility: "direct",
+                            visibility: this.visibility,
                             content_type: "text/plain",
                             language: "en" //rahhhhh
-                        });
+                        };
+                        if (this.replyto)
+                            payload.in_reply_to_id = this.replyto.id;
+                        await sendForm("/api/v1/statuses", payload);
                     } catch { }
                     $el.classList.toggle(grayed);
                     this.sending = false;

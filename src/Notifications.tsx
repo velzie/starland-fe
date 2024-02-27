@@ -46,9 +46,9 @@ export const Notifications: Component<{
 
   return (
     <Container class={[padding, borderbox, w100, h100]} title="notifications">
-      <div>
+      <div class={[w100, borderbox, h100]}>
         {$if(use(state.user),
-          <div class={[flex, col, scrolly, h100, w100, gap, rule`scrollbar-width: none; padding-right: 1em`]}>
+          <div class={[flex, col, borderbox, scrolly, h100, w100, gap, rule`scrollbar-width: none; padding-right: 1em`]}>
             {use(this.notifs)}
           </div>,
           <div>
